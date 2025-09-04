@@ -1,8 +1,25 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual environment
 .venv/
+
+# Environment / secrets
 .env
 .env.*
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+
+# macOS
 .DS_Store
+
+# IDE
 .vscode/
 .idea/
