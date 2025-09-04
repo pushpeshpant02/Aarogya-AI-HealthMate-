@@ -31,8 +31,8 @@ healthmate/
 
 ## 🚀 Getting Started (Local)
 
-### 1️⃣ Backend (FastAPI)
-```bash
+
+
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
