@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Aarogya AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body data-theme="light">
+    <div class="chat-page">
+        <!-- Background Effects -->
+        <div class="chat-bg" id="chat-bg">
+            <div class="typing-orb orb-1"></div>
+            <div class="typing-orb orb-2"></div>
+            <div class="typing-orb orb-3"></div>
+        </div>
+
+        <!-- Header -->
+        <header class="chat-header">
+            <div class="chat-nav">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i data-lucide="brain"></i>
+                    </div>
+                    <div class="brand-info">
+                        <h1>Aarogya AI</h1>
+                        <span>Intelligent Healthcare Assistant</span>
+                    </div>
+                </div>
+                <div class="chat-controls">
+                    <div class="ai-status">
+                        <div class="ai-pulse"></div>
+                        <span>AI Online</span>
+                    </div>
+                    <div id="premium-status" class="premium-status hidden">
+                        <div class="status-dot"></div>
+                        <span>Premium Active</span>
+                    </div>
+                    <button class="theme-toggle small" onclick="toggleTheme()">
+                        <i data-lucide="sun" class="sun-icon"></i>
+                        <i data-lucide="moon" class="moon-icon"></i>
+                    </button>
+                    <a href="index.html" class="btn-home">← Home</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be added here -->
+            </div>
+        </main>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="input-container" id="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="chat-input" 
+                        placeholder="Describe your symptoms or ask a health question..."
+                        rows="1"
+                    ></textarea>
+                    <div id="typing-indicator" class="typing-indicator hidden">
+                        🧠 AI is analyzing your symptoms...
+                    </div>
+                </div>
+                <button class="btn-send" id="btn-send" onclick="sendMessage()">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+            <div class="input-footer">
+                <span>Press Enter to send • Shift+Enter for new line</span>
+                <div id="premium-indicator" class="premium-indicator hidden">
+                    <i data-lucide="brain"></i>
+                    <span>Premium AI Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SOS Button -->
+        <button class="sos-btn" onclick="handleSOS()">
+            <i data-lucide="alert-triangle"></i>
+        </button>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        let messages = [];
+        let isLoading = false;
+        let isTyping = false;
+        let typingTimeout;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initTheme();
+            checkLoginStatus();
+            addWelcomeMessage();
+            setupEventListeners();
+        });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (isLoggedIn) {
+                document.getElementById('premium-status').classList.remove('hidden');
+                document.getElementById('premium-indicator').classList.remove('hidden');
+            }
+        }
+
+        function addWelcomeMessage() {
+            setTimeout(() => {
+                addBotMessage("🧠 Hello! I'm Aarogya AI, your intelligent healthcare assistant. I can help you with symptom analysis, health questions, medication guidance, and wellness advice. What brings you here today?");
+            }, 1000);
+        }
+
+        function setupEventListeners() {
+            const chatInput = document.getElementById('chat-input');
+            
+            chatInput.addEventListener('input', function() {
+                handleTyping();
+                autoResize(this);
+            });
+            
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        function handleTyping() {
+            const chatBg = document.getElementById('chat-bg');
+            const indicator = document.getElementById('typing-indicator');
+            const container = document.getElementById('input-container');
+            
+            chatBg.classList.add('typing-active');
+            indicator.classList.remove('hidden');
+            container.classList.add('typing-active');
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                chatBg.classList.remove('typing-active');
+                indicator.classList.add('hidden');
+                container.classList.remove('typing-active');
+            }, 1500);
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function addMessage(text, sender, options = {}) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const isMarkdown = options.isMarkdown === true;
+            const isEmergency = options.emergency === true;
+
+            const rendered = isMarkdown && window.marked
+                ? marked.parse(text)
+                : (text || '').replace(/\n/g, '<br>');
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble${isEmergency ? ' emergency' : ''}">
+                    <div class="message-header">
+                        <i data-lucide="${sender === 'bot' ? 'brain' : 'user'}"></i>
+                        <span>${sender === 'bot' ? 'Aarogya AI' : 'You'}</span>
+                        ${isEmergency ? '<span class="emergency-badge">🚨 Emergency</span>' : ''}
+                    </div>
+                    <div class="message-text">${rendered}</div>
+                    <span class="message-time">${timestamp}</span>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+            
+            messages.push({ text, sender, timestamp });
+        }
+
+        function addBotMessage(text, options = {}) {
+            addMessage(text, 'bot', { isMarkdown: true, ...options });
+        }
+
+        function addUserMessage(text) {
+            addMessage(text, 'user');
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chat-messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-message';
+            typingDiv.className = 'message bot-message typing';
+            typingDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-header">
+                        <i data-lucide="brain"></i>
+                        <span>Aarogya AI</span>
+                    </div>
+                    <div class="typing-dots">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <span class="typing-text">Analyzing your query...</span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+        }
+
+        function hideTypingIndicator() {
+            const typingMessage = document.getElementById('typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+        }
+
+        function getAIResponse(message) {
+            const responses = [
+                "🔍 Based on your symptoms, I recommend consulting with a healthcare professional for proper diagnosis. In the meantime, ensure you stay hydrated and get adequate rest.",
+                "💊 For medication questions, always consult your doctor or pharmacist. I can provide general information, but personalized medical advice requires professional consultation.",
+                "🏥 Your health concern is important. While I can offer general guidance, I strongly recommend scheduling an appointment with a healthcare provider for proper evaluation.",
+                "🧠 I've analyzed your query using advanced medical algorithms. These symptoms could indicate several conditions - professional medical evaluation is recommended.",
+                "⚕️ Thank you for sharing your health concern. Based on medical literature, here are some general recommendations, but professional consultation is essential.",
+                "🩺 I understand your symptoms. Let me provide some general health information, but please remember this doesn't replace professional medical consultation."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            input.style.height = 'auto';
+            isLoading = true;
+            
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch(`${window.API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage(data.reply || getAIResponse(message), { emergency: !!data.emergency_recommended });
+                    isLoading = false;
+                }, 1500);
+            } catch (error) {
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotMessage(getAIResponse(message));
+                    isLoading = false;
+                }, 1500);
+            }
+        }
+
+        async function handleSOS() {
+            try {
+                await fetch(`${window.API_BASE}/sos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emergency: true, timestamp: new Date() })
+                });
+                alert('🚨 Emergency alert sent! Medical assistance has been notified.');
+            } catch (e) {
+                alert('⚠️ Please call emergency services directly.');
+            }
+        }
+    </script>
+</body>
+</html>

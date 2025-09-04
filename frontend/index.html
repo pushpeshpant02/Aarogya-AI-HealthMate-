@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya AI - Intelligent Healthcare Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body data-theme="light">
+    <!-- Landing Page -->
+    <div class="page-container">
+        <!-- Floating Background -->
+        <div class="floating-bg">
+            <div class="float-orb orb-1"></div>
+            <div class="float-orb orb-2"></div>
+            <div class="float-orb orb-3"></div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i data-lucide="brain"></i>
+                    </div>
+                    <div class="brand-info">
+                        <h1>Aarogya AI</h1>
+                        <span>Intelligent Healthcare</span>
+                    </div>
+                </div>
+                <div class="nav-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <i data-lucide="sun" class="sun-icon"></i>
+                        <i data-lucide="moon" class="moon-icon"></i>
+                    </button>
+                    <a href="login.html" class="btn-nav">Login</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <main class="hero">
+            <div class="hero-content">
+                <div class="ai-badge">
+                    <i data-lucide="brain"></i>
+                    <span>POWERED BY ADVANCED AI</span>
+                </div>
+
+                <h2 class="hero-title">
+                    Your Intelligent
+                    <span class="gradient-text">Health Companion</span>
+                </h2>
+
+                <p class="hero-desc">
+                    Experience next-generation healthcare with Aarogya AI. Get precise diagnoses, 
+                    personalized treatment plans, and 24/7 expert guidance powered by cutting-edge AI.
+                </p>
+
+                <div class="action-buttons">
+                    <a href="chat.html" class="btn-primary">
+                        <i data-lucide="message-circle"></i>
+                        <span>Start AI Consultation</span>
+                        <span class="btn-badge">FREE</span>
+                    </a>
+                    <a href="login.html" class="btn-secondary">
+                        <i data-lucide="user-check"></i>
+                        <span>Premium Features</span>
+                        <span class="btn-badge premium">PRO</span>
+                    </a>
+                </div>
+
+                <!-- Features -->
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon blue">
+                            <i data-lucide="brain"></i>
+                        </div>
+                        <h3>AI Diagnostics</h3>
+                        <p>Advanced neural networks with 95% accuracy</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon green">
+                            <i data-lucide="shield"></i>
+                        </div>
+                        <h3>Secure & Private</h3>
+                        <p>Military-grade encryption & HIPAA compliant</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon purple">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        <h3>Instant Response</h3>
+                        <p>Lightning-fast AI responses in under 3 seconds</p>
+                    </div>
+                </div>
+
+                <!-- Trust Stats -->
+                <div class="trust-stats">
+                    <div class="stat">
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Doctors</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">1M+</div>
+                        <div class="stat-label">Patients</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- SOS Button -->
+        <button class="sos-btn" onclick="handleSOS()">
+            <i data-lucide="alert-triangle"></i>
+        </button>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initTheme();
+        });
+
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Smooth transition
+            document.body.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+                document.body.style.transition = '';
+            }, 300);
+        }
+
+        // SOS Function
+        async function handleSOS() {
+            try {
+                await fetch(`${window.API_BASE}/sos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emergency: true, timestamp: new Date() })
+                });
+                alert('🚨 Emergency alert sent! Medical assistance notified.');
+            } catch (error) {
+                alert('⚠️ Please call emergency services directly: 911');
+            }
+        }
+
+        // Animate stats on scroll
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            stats.forEach(stat => {
+                stat.style.opacity = '0';
+                stat.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    stat.style.transition = 'all 0.6s ease';
+                    stat.style.opacity = '1';
+                    stat.style.transform = 'translateY(0)';
+                }, Math.random() * 500);
+            });
+        }
+
+        // Trigger animations
+        setTimeout(animateStats, 1000);
+    </script>
+</body>
+</html>

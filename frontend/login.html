@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Aarogya AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body data-theme="light">
+    <div class="page-container">
+        <!-- Floating Background -->
+        <div class="floating-bg">
+            <div class="float-orb orb-1"></div>
+            <div class="float-orb orb-2"></div>
+            <div class="float-orb orb-3"></div>
+        </div>
+
+        <!-- Login Container -->
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <i data-lucide="brain"></i>
+                    </div>
+                    <h2 id="login-title">Welcome to Aarogya AI</h2>
+                    <p id="login-subtitle">Access your intelligent health dashboard</p>
+                </div>
+
+                <!-- Phone Step -->
+                <div id="phone-step" class="login-step active">
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="phone"></i>
+                            <input type="tel" id="phone-input" placeholder="+1 (555) 123-4567">
+                        </div>
+                    </div>
+                    <button class="btn-login" onclick="sendOTP()">
+                        <span>Send Verification Code</span>
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+
+                <!-- OTP Step -->
+                <div id="otp-step" class="login-step">
+                    <div class="input-group">
+                        <label>Verification Code</label>
+                        <input type="text" id="otp-input" class="otp-input" placeholder="●●●●" maxlength="4">
+                        <p class="demo-hint">✨ Demo Code: <span class="demo-code">1234</span></p>
+                    </div>
+                    <button class="btn-login" onclick="verifyOTP()">
+                        <span>Access Aarogya AI</span>
+                        <i data-lucide="brain"></i>
+                    </button>
+                </div>
+
+                <!-- Actions -->
+                <div class="login-actions">
+                    <a href="chat.html" class="btn-guest">
+                        🧠 Try AI Assistant Now
+                    </a>
+                    <a href="index.html" class="btn-back">
+                        ← Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="theme-toggle floating" onclick="toggleTheme()">
+            <i data-lucide="sun" class="sun-icon"></i>
+            <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+
+        <!-- SOS Button -->
+        <button class="sos-btn" onclick="handleSOS()">
+            <i data-lucide="alert-triangle"></i>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initTheme();
+        });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function sendOTP() {
+            const phone = document.getElementById('phone-input').value;
+            if (phone.length >= 10) {
+                document.getElementById('phone-step').classList.remove('active');
+                document.getElementById('otp-step').classList.add('active');
+                document.getElementById('login-title').textContent = 'Verification Required';
+                document.getElementById('login-subtitle').textContent = 'Enter the code sent to your phone';
+                setTimeout(() => alert('🧠 Verification code sent!'), 500);
+            } else {
+                alert('Please enter a valid phone number');
+            }
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otp-input').value;
+            if (otp === '1234') {
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'chat.html';
+            } else {
+                alert('❌ Invalid code. Try: 1234');
+            }
+        }
+
+        async function handleSOS() {
+            alert('🚨 Emergency services contacted!');
+        }
+    </script>
+</body>
+</html>
